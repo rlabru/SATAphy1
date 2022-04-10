@@ -1,0 +1,17 @@
+
+##
+#NET clk    LOC = H28 | TNM_NET = sys_clk_pin | IOSTANDARD = "LVCMOS25";
+##
+
+########LED Pin define#####################
+NET led<0>           LOC = AN18 | IOSTANDARD = "LVCMOS25";       ## LED3
+NET led<1>           LOC = AN17 | IOSTANDARD = "LVCMOS25";       ## LED4
+NET led<2>           LOC = AP17 | IOSTANDARD = "LVCMOS25";       ## LED5
+NET led<3>           LOC = AP16 | IOSTANDARD = "LVCMOS25";       ## LED6
+NET led<4>           LOC = AN15 | IOSTANDARD = "LVCMOS25";       ## LED7
+NET led<5>           LOC = AP15 | IOSTANDARD = "LVCMOS25";       ## LED8
+NET led<6>           LOC = AN14 | IOSTANDARD = "LVCMOS25";       ## LED9
+NET led<7>           LOC = AP14 | IOSTANDARD = "LVCMOS25";       ## LED10
+
+NET SATACLK_QO_N         LOC="F5";   # Bank 116, MGTREFCLK1N_116 , GTP_DUAL_X0Y3 (?)
+NET SATACLK_QO_P         LOC="F6";   # Bank 116, MGTREFCLK1P_116 , GTP_DUAL_X0Y3 (?)
