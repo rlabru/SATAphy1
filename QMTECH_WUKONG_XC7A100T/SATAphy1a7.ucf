@@ -1,0 +1,23 @@
+
+#NET "clkg"  LOC = "E5";
+
+NET "clkg"  LOC = "M22";
+NET "clkg" TNM_NET = "clk";
+NET "LEDS[0]"  LOC = "H6";
+NET "LEDS[1]"  LOC = "J6";
+NET "KEY"  LOC = "J8";
+
+NET SATACLK_QO_N         LOC="AB13";   # Bank 213, MGTREFCLK0N_116 , GTP_DUAL_X0Y3 (?)
+NET SATACLK_QO_P         LOC="AA13";   # Bank 213, MGTREFCLK0P_116 , GTP_DUAL_X0Y3 (?)
+
+
+NET "LED[0]"  LOC = "H21";
+NET "LED[1]"  LOC = "H22";
+NET "LED[2]"  LOC = "K21";
+NET "LED[3]"  LOC = "J21";
+NET "LED[4]"  LOC = "H26";
+NET "LED[5]"  LOC = "G26";
+NET "LED[6]"  LOC = "G25";
+NET "LED[7]"  LOC = "F25";
+
+NET "*" IOSTANDARD = LVCMOS33;
