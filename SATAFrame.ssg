@@ -1,0 +1,167 @@
+%include "Generation\Include\Settings.inc"
+%include "Generation\Include\PrimitivesDecl.inc"
+%include "Generation\Include\AddressFramesDecl.inc"
+%include "Generation\Include\SSPFramesDecl.inc"
+%include "Generation\Include\SMPFramesDecl.inc"
+
+
+Set GenerationMode          = GEN_MODE_SATA_HOST
+
+Set Speed                   = LINK_SPEED_3G #LINK_SPEED_1_5G # 
+set MultiSpeedMode          = ON
+
+Set AutoOOBMode             = FALSE	  # this script doesn't use any automatic handshaking
+Set AutoSpeedNeg            = FALSE 
+Set AutoAlignSAS            = OFF     # automatically insert in the stream Align primitives every 2048 dwords, as specified in the SAS spec.
+Set AutoAlignSATA           = OFF     # automatically insert in the stream 2 Align(0) primitives every 254 dwords, as specified in the SATA spec.
+Set PauseTrnScrmblr			= OFF	  # pause the Idle scrambler of Train/TrainDone pattern during the time generator is sending Train or TrainDone primitives.
+
+Set OOB_SAS_Align1_Time     =  81920  # ALIGN(0) time for SAS speed negotiation in OOBIs. 
+Set OOB_SAS_Align0_Time     =  81920  # ALIGN(1) time for SAS speed negotiation in OOBIs. 
+Set OOB_SAS_Interspeed_Time = 750000  # Interspeed time for SAS speed negotiation in OOBIs. 
+
+set OOB_SpeedNeg_RCDT		= 750000 
+set OOB_SpeedNeg_SNTT 		= 163840
+set OOB_SpeedNeg_SNLT 		= 153600
+set OOB_SpeedNeg_MTT		= 29998080
+set OOB_SpeedNeg_BCT  		= 2200
+
+set OOB_SpeedNeg_Phy_start 			= 1 		# Start
+set OOB_SpeedNeg_Phy_txSSCtype 		= 0 		# TX SSC Type
+set OOB_SpeedNeg_Phy_rllr			= 0xA 		# Requested Logical Link Rate: set 0x8 for 1.5G, set 0x9 for 3G, set 0xA for 6G. 
+set OOB_SpeedNeg_Phy_g1WithoutSSC 	= 1 
+set OOB_SpeedNeg_Phy_g1WithSSC 		= 0	
+set OOB_SpeedNeg_Phy_g2WithoutSSC 	= 1 
+set OOB_SpeedNeg_Phy_g2WithSSC 		= 0 
+set OOB_SpeedNeg_Phy_g3WithoutSSC 	= 1 
+set OOB_SpeedNeg_Phy_g3WithSSC 		= 0 
+set OOB_SpeedNeg_Phy_Parity			= 0 
+
+set WaitTimeout = 100
+
+Generation
+{
+	disconnect
+	connect
+
+    Set AutoAlignSATA   = ON
+    SATA_SYNC
+    SATA_SYNC
+    SATA_CONT
+
+	wait_for{WF_SATA_X_RDY}    
+    SATA_R_RDY
+    SATA_R_RDY
+    SATA_CONT
+ 
+    wait_for {WF_SATA_EOF}
+    SATA_R_IP
+    SATA_R_IP
+    SATA_CONT
+    Idle (50)     
+
+    SATA_R_OK
+    SATA_R_OK
+    SATA_CONT
+    Idle (50)     
+
+    SATA_SYNC
+    SATA_SYNC
+    SATA_CONT
+    Idle (50)     
+ 
+    
+    Idle (50)     
+     
+	SendSATAFrame
+    {
+        SATA_X_RDY   ( 2 )          # STP(SATA) frame is encoded as a sequence of SATA primitives,
+        SATA_CONT                   # vendor scrambled dwords (XXXX) and Data dwords.
+        SATA_XXXX    ( 2 )
+        SATA_XXXX    ( 7 )
+        SATA_X_RDY   ( 2 )
+        SATA_CONT
+        SATA_XXXX    ( 3 )
+     }
+     wait_for{WF_SATA_R_RDY}
+     
+     SendSATAFrame
+   	 {
+        SATA_SOF
+        SATA_DATA    ( 0x2780EC00 ) # first DATA dword, defines Register Host to Device FIS and WRITE DMA command
+        SATA_DATA    ( 0x00000000 ) 
+        SATA_DATA    ( 0x00000000 )
+        SATA_DATA    ( 0x00000000 )
+        SATA_DATA    ( 0x00000000 )
+      # SATA_CRC     ( 0x5997992C )  # good crc - can be changed to bad
+        SATA_EOF
+        SATA_WTRM    ( 2 )
+        SATA_CONT
+        SATA_XXXX    ( 24 )
+    }
+
+    SATA_SYNC    ( Count = 2 )       # Send Idle SATA primitives
+    SATA_CONT
+
+    IDLE ( 210 )
+
+    SATA_SYNC    ( Count = 2 )
+    SATA_CONT
+
+    IDLE ( 214 )
+
+    # Receive side STP (SATA) frame for an FIS.
+    
+    WAIT_FOR {WF_SATA_X_RDY}
+    
+    SendSATAFrame
+    {
+        SATA_R_RDY   ( 2 )
+        SATA_CONT
+        SATA_XXXX (20)
+    }
+    
+    
+    WAIT_FOR {WF_SATA_EOF}
+    
+    SendSATAFrame
+    {
+        SATA_R_IP    ( 2 )
+        SATA_CONT
+        SATA_R_IP    ( 3 )
+        SATA_R_OK    ( 2 )
+        SATA_CONT
+        SATA_XXXX
+        SATA_R_OK    ( 2 )
+        SATA_CONT
+        SATA_XXXX    ( 12 )
+    }
+    
+    Idle(10)
+    # Receive side STP (SATA) frame for an FIS.
+    
+    WAIT_FOR {WF_SATA_X_RDY}
+    
+    SendSATAFrame
+    {
+        SATA_R_RDY   ( 2 )
+        SATA_CONT
+        SATA_XXXX (20)
+    }
+    
+    
+    WAIT_FOR {WF_SATA_EOF}
+    
+    SendSATAFrame
+    {
+        SATA_R_IP    ( 2 )
+        SATA_CONT
+        SATA_R_IP    ( 3 )
+        SATA_R_OK    ( 2 )
+        SATA_CONT
+        SATA_XXXX
+        SATA_R_OK    ( 2 )
+        SATA_CONT
+        SATA_XXXX    ( 12 )
+    }
+}
